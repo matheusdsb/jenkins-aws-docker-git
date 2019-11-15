@@ -1,0 +1,42 @@
+pipeline {
+    
+    agent any
+    
+    environment {
+        AWS_SECRET_KEY = credentials('AWS_SECRET_KEY')
+    }
+    
+    stages {    
+        stage('Checkout') {
+            steps {
+                sshagent (credentials: ['git-credentials']) {
+                    sh ''' 
+                        chmod +x ./git-checkout/checkout.sh
+                        ./git-checkout/checkout.sh
+                    '''                    
+                }
+            }
+        }
+    
+        stage('Build') {
+            steps {
+                sh ''' 
+                    chmod +x ./build-release/build.sh
+                    ./build-release/build.sh
+                '''
+            }
+        }    
+        
+        stage('Deploy') {
+            steps {
+                sh ''' 
+                    chmod +x ./deploy/deploy.sh
+                    ./deploy/deploy.sh
+                    chmod +x ./deploy/aws.sh
+                    ./deploy/aws.sh
+                '''
+            }
+        }         
+    }
+}
+ 
